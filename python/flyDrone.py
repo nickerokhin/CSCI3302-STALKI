@@ -73,6 +73,11 @@ if (success):
             try:
                 im = bebopVision.get_latest_valid_picture()
                 hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
+                dimensions = im.shape
+                height = dimensions[0]
+                width = dimensions[1]
+                left_bound = width/3
+                right_bound = (width/3) * 2
                 #Green color in HSV
                 #low = np.array([40, 50, 50])
                 #high = np.array([80, 255, 255])
@@ -99,24 +104,53 @@ if (success):
                     #Area range, 9000-13000
                     #Below 9000, move forward
                     #Above 13000, move backward
-                    if biggestRectArea < 9000:
-                        print("Moving forward")
-                        move_forward(bebop, 20, 2)
-                        time.sleep(2)
 
-                    if biggestRectArea > 13000:
-                        #move_backward(bebop, 20, 2)
-                        print("Moving backward")
-                        move_backward(bebop, 20, 2)
-                        time.sleep(2)
-
-                    
+                    centerX = int(x + w/2)
+                    centerY = int(y + h/2)
+                    '''
                     if biggestRect is not None:
                         cv2.rectangle(im, (x,y), (x+w, y+h), (0, 255,0), 2)
+                        cv2.circle(im, (centerX, centerY),  5, (0, 0,255))
+                        print("Image saved")
                         cv2.imwrite("feed%03d.png" % (now - then).total_seconds(), im)
-                
+                    '''
 
-                    #Get center of rectangle coordinates
+                    if biggestRectArea < 8000 and centerX < left_bound:
+                        move_right(bebop, 20, 1)
+                        print("Moving right")
+                        time.sleep(1)
+                        continue
+
+                    if biggestRectArea > 8000 and centerX > right_bound:
+                        move_left(bebop, 20, 1)
+                        print("Moving left")
+                        time.sleep(1)
+                        continue
+
+                    elif biggestRectArea < 8000:
+                        print("Moving forward")
+                        move_forward(bebop, 20, 1)
+                        time.sleep(1)
+                        continue
+
+                    elif biggestRectArea > 15000:
+                        move_backward(bebop, 20, 1)
+                        print("Moving backward")
+                        #move_backward(bebop, 20, 2)
+                        time.sleep(1)
+                        continue
+
+                    elif centerX < left_bound:
+                        move_right(bebop, 20, 1)
+                        print("Moving right")
+                        time.sleep(1)
+                        continue
+
+                    elif centerX > right_bound:
+                        move_left(bebop, 20, 1)
+                        print("Moving left")
+                        time.sleep(1)
+                        continue
                 
 
 
@@ -124,8 +158,11 @@ if (success):
             except KeyboardInterrupt:
                 print("Emergency landing...")
                 bebop.emergency_land()
-            except Exception:
+                exit()
+            except Exception as e:
+                print(e)
                 bebop.emergency_land()
+                exit()
         print("Moving the camera using velocity")
         #bebop.pan_tilt_camera_velocity(pan_velocity=0, tilt_velocity=-2, duration=4)
         #bebop.smart_sleep(25)
