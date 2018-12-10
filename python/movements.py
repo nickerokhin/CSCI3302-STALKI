@@ -19,17 +19,17 @@ def move_forward(bebop, tilt, time):
   time = time if time < MAX_TIME else MAX_TIME
   bebop.fly_direct(roll=0, pitch=tilt, yaw=0, vertical_movement=0, duration=time)
 
-def move_backward(bebop, time):
+def move_backward(bebop, tilt, time):
   tilt = tilt if tilt < MAX_TILT else MAX_TILT
   time = time if time < MAX_TIME else MAX_TIME
   bebop.fly_direct(roll=0, pitch=-tilt, yaw=0, vertical_movement=0, duration=time)
 
-def move_left(bebop, time):
+def move_left(bebop, tilt, time):
   tilt = tilt if tilt < MAX_TILT else MAX_TILT
   time = time if time < MAX_TIME else MAX_TIME
   bebop.fly_direct(roll=tilt, pitch=0, yaw=0, vertical_movement=0, duration=time)
 
-def move_right(bebop, time):
+def move_right(bebop, tilt, time):
   tilt = tilt if tilt < MAX_TILT else MAX_TILT
   time = time if time < MAX_TIME else MAX_TIME
   bebop.fly_direct(roll=-tilt, pitch=0, yaw=0, vertical_movement=0, duration=time)
