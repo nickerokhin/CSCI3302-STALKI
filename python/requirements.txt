@@ -1,0 +1,13 @@
+Click==7.0
+Flask==1.0.2
+Flask-SocketIO==3.1.1
+ifaddr==0.1.6
+itsdangerous==1.1.0
+Jinja2==2.10
+MarkupSafe==1.1.0
+python-engineio==3.0.0
+python-socketio==2.1.1
+six==1.11.0
+untangle==1.1.1
+Werkzeug==0.14.1
+zeroconf==0.21.3
