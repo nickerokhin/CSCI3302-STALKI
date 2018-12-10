@@ -93,11 +93,17 @@ if (success):
                     biggestRectArea = area
             x, y, w, h = biggestRect
             print(biggestRectArea)
+            #Area range, 9000-13000
+            #Below 9000, move forward
+            #Above 13000, move backward
+            '''
             if biggestRect is not None:
                 cv2.rectangle(im, (x,y), (x+w, y+h), (0, 255,0), 2)
                 cv2.imwrite("feed%03d.png" % (now - then).total_seconds(), im)
+            
 
                 #Get center of rectangle coordinates
+            '''
 
 
             now = datetime.datetime.now()
