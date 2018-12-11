@@ -10,7 +10,25 @@ import numpy as np
 import os
 import datetime
 from movements import *
+from multiprocessing import Process, Queue
 isAlive = False
+
+
+def write_image(que):
+    while True:
+        obj = que.get()
+        im = obj[0]
+        rect = obj[1]
+        identifier = obj[2]
+        x,y,w,h = rect
+        centerX, centerY = obj[3]
+        upper_bound, lower_bound = obj[4]
+        cv2.rectangle(im, (x,y), (x+w, y+h), (0, 255,0), 2)
+        cv2.circle(im, (centerX, centerY),  5, (0, 0,255))
+        cv2.circle(im, (centerX, int(lower_bound)), 10, (0, 0, 255))
+        cv2.circle(im, (centerX, int(upper_bound)), 10, (0,0,255))
+        print("Image saved")
+        cv2.imwrite("feed%03d.png" % identifier, im)
 
 
 def clear_images():
@@ -44,8 +62,10 @@ class UserVision:
 
 # make my bebop object
 bebop = Bebop()
-
+queue = Queue()
 # connect to the bebop
+p = Process(target=write_image, args=(queue,))
+p.start()
 success = bebop.connect(5)
 clear_images()
 if (success):
@@ -69,6 +89,7 @@ if (success):
         then = datetime.datetime.now()
         now = datetime.datetime.now()
         bebop.safe_takeoff(10)
+        inc = 0
         while (now - then).total_seconds() < 20:
             try:
                 im = bebopVision.get_latest_valid_picture()
@@ -78,12 +99,16 @@ if (success):
                 width = dimensions[1]
                 left_bound = width/3
                 right_bound = (width/3) * 2
+                upper_bound = height/5
+                lower_bound = (height/5) * 4
+                upper_bound -= 50
+                lower_bound -= 50
                 #Green color in HSV
                 #low = np.array([40, 50, 50])
                 #high = np.array([80, 255, 255])
                 #Blue color in HSV
-                low = np.array([100, 50, 50])
-                high = np.array([140, 255, 255])
+                low = np.array([72, 33, 195])
+                high = np.array([203, 192, 255])
                 image_mask = cv2.inRange(hsv, low, high)
                 kern = np.ones((9,9), np.uint8)
                 mask = cv2.morphologyEx(image_mask, cv2.MORPH_OPEN, kern)
@@ -100,57 +125,76 @@ if (success):
                         biggestRectArea = area
                 if biggestRect is not None:
                     x, y, w, h = biggestRect
-                    print(biggestRectArea)
+                    print("Rectangle area", biggestRectArea)
                     #Area range, 9000-13000
                     #Below 9000, move forward
                     #Above 13000, move backward
 
                     centerX = int(x + w/2)
                     centerY = int(y + h/2)
-                    '''
-                    if biggestRect is not None:
-                        cv2.rectangle(im, (x,y), (x+w, y+h), (0, 255,0), 2)
-                        cv2.circle(im, (centerX, centerY),  5, (0, 0,255))
-                        print("Image saved")
-                        cv2.imwrite("feed%03d.png" % (now - then).total_seconds(), im)
-                    '''
+                    queue.put((im, biggestRect, inc, (centerX, centerY), (upper_bound, lower_bound)))
+                    #print("Center X:", centerX)
+                    #print("Center Y:", centerY)
+                    
+                    #if biggestRect is not None:
 
-                    if biggestRectArea < 8000 and centerX < left_bound:
+                    
+                    if centerY > upper_bound:
+                        #move_up(bebop, 20, 0.5)
+                        print("Moving up")
+                        time.sleep(0.5)
+                        inc += 1
+
+
+                    elif centerY < lower_bound:
+                        #move_down(bebop, 20, 0.5)
+                        print("Moving down")
+                        time.sleep(0.5)
+                        inc += 1
+
+
+                    elif biggestRectArea < 8000 and centerX < left_bound:
                         move_right(bebop, 20, 1)
                         print("Moving right")
                         time.sleep(1)
-                        continue
+                        inc += 1
 
-                    if biggestRectArea > 8000 and centerX > right_bound:
+
+                    elif biggestRectArea > 8000 and centerX > right_bound:
                         move_left(bebop, 20, 1)
                         print("Moving left")
                         time.sleep(1)
-                        continue
+                        inc += 1
+
 
                     elif biggestRectArea < 8000:
                         print("Moving forward")
                         move_forward(bebop, 20, 1)
                         time.sleep(1)
-                        continue
+                        inc += 1
 
-                    elif biggestRectArea > 15000:
+
+                    elif biggestRectArea > 13000:
                         move_backward(bebop, 20, 1)
                         print("Moving backward")
                         #move_backward(bebop, 20, 2)
                         time.sleep(1)
-                        continue
+                        inc += 1
+
 
                     elif centerX < left_bound:
                         move_right(bebop, 20, 1)
                         print("Moving right")
                         time.sleep(1)
-                        continue
+                        inc += 1
+
 
                     elif centerX > right_bound:
                         move_left(bebop, 20, 1)
                         print("Moving left")
                         time.sleep(1)
-                        continue
+                        inc += 1
+
                 
 
 
@@ -173,7 +217,7 @@ if (success):
     # disconnect nicely so we don't need a reboot
     print("Finishing demo, landing....")
     bebop.safe_land(20)
-    bebop.disconnect()
+    #bebop.disconnect()
 else:
     print("Error connecting to bebop.  Retry")
 
