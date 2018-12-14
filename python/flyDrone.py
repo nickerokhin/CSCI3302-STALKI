@@ -101,12 +101,12 @@ if (success):
                 right_bound = (width/3) * 2
                 upper_bound = height/5
                 lower_bound = (height/5) * 4
-                upper_bound -= 50
-                lower_bound -= 50
+                #upper_bound -= 50
+                #lower_bound -= 50
                 #Green color in HSV
                 #low = np.array([40, 50, 50])
                 #high = np.array([80, 255, 255])
-                #Blue color in HSV
+                #Pink color in GBR
                 low = np.array([72, 33, 195])
                 high = np.array([203, 192, 255])
                 image_mask = cv2.inRange(hsv, low, high)
@@ -139,16 +139,16 @@ if (success):
                     #if biggestRect is not None:
 
                     
-                    if centerY > upper_bound:
-                        #move_up(bebop, 20, 0.5)
-                        print("Moving up")
+                    if centerY < upper_bound:
+                        #move_down(bebop, 20, 0.5)
+                        print("Moving down")
                         time.sleep(0.5)
                         inc += 1
 
 
-                    elif centerY < lower_bound:
-                        #move_down(bebop, 20, 0.5)
-                        print("Moving down")
+                    elif centerY > lower_bound:
+                        #move_up(bebop, 20, 0.5)
+                        print("Moving up")
                         time.sleep(0.5)
                         inc += 1
 
