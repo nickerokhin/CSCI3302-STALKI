@@ -81,8 +81,8 @@
       var socket = io.connect('http://localhost:5000');
       socket.on('connect', function() {
         console.log('Websocket connected!');
+		socket.emit('direction', {data : 'Receiving connections'})
       });
-
       socket.on('move', function(msg) {
         console.log(msg);
         document.getElementById('change').innerHTML = msg.move;
