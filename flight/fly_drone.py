@@ -59,7 +59,7 @@ class UserVision:
             #cv2.imwrite(filename, img)
             self.index +=1
 
-def start_flight(q):
+def start_flight():
     # make my bebop object
     bebop = Bebop()
     queue = Queue()
@@ -90,7 +90,7 @@ def start_flight(q):
             now = datetime.datetime.now()
             bebop.safe_takeoff(10)
             inc = 0
-            while (now - then).total_seconds() < 20:
+            while (now - then).total_seconds() < 45:
                 try:
                     im = bebopVision.get_latest_valid_picture()
                     hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
@@ -108,11 +108,11 @@ def start_flight(q):
                     #low = np.array([40, 50, 50])
                     #high = np.array([80, 255, 255])
                     #Pink color in GBR
-                    #low = np.array([72, 33, 195])
-                    #high = np.array([203, 192, 255])
+                    low = np.array([72, 33, 195])
+                    high = np.array([203, 192, 255])
                     #Blue color in GBR
-                    low = np.array([100, 50, 50])
-                    high = np.array([140, 255, 255])
+                    #low = np.array([100, 50, 50])
+                    #high = np.array([140, 255, 255])
                     image_mask = cv2.inRange(hsv, low, high)
                     kern = np.ones((9,9), np.uint8)
                     mask = cv2.morphologyEx(image_mask, cv2.MORPH_OPEN, kern)
@@ -158,28 +158,28 @@ def start_flight(q):
 
 
                         elif biggestRectArea < 8000 and centerX < left_bound:
-                            move_right(bebop, 20, 1)
-                            print("Moving right")
+                            move_right(bebop, 40, 1)
+                            print("Moving right, small rect")
                             time.sleep(1)
                             inc += 1
 
 
-                        elif biggestRectArea > 8000 and centerX > right_bound:
-                            move_left(bebop, 20, 1)
-                            print("Moving left")
+                        elif biggestRectArea < 8000 and centerX > right_bound:
+                            move_left(bebop, 40, 1)
+                            print("Moving left, small rect")
                             time.sleep(1)
                             inc += 1
 
 
-                        elif biggestRectArea < 8000:
+                        elif biggestRectArea < 9000:
                             print("Moving forward")
-                            move_forward(bebop, 20, 1)
+                            move_forward(bebop, 40, 1)
                             time.sleep(1)
                             inc += 1
 
 
-                        elif biggestRectArea > 15000:
-                            move_backward(bebop, 20, 1)
+                        elif biggestRectArea > 13000:
+                            move_backward(bebop, 40, 1)
                             print("Moving backward")
                             #move_backward(bebop, 20, 2)
                             time.sleep(1)
@@ -187,14 +187,14 @@ def start_flight(q):
 
 
                         elif centerX < left_bound:
-                            move_right(bebop, 20, 1)
+                            move_right(bebop, 40, 1)
                             print("Moving right")
                             time.sleep(1)
                             inc += 1
 
 
                         elif centerX > right_bound:
-                            move_left(bebop, 20, 1)
+                            move_left(bebop, 40, 1)
                             print("Moving left")
                             time.sleep(1)
                             inc += 1
@@ -225,6 +225,5 @@ def start_flight(q):
     else:
         print("Error connecting to bebop.  Retry")
 
-if __name__ == "__main__":
-	q = None
-    start_flight()
+#if __name__ == "__main__":
+#    start_flight()
