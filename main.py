@@ -1,6 +1,6 @@
 import sys
 sys.path.append('./flight/')
-sys.path.append('./web/')
+sys.path.append('./www/')
 
 from multiprocessing import Process, Queue
 from flight.fly_drone import *

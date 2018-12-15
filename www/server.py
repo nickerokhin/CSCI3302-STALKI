@@ -1,4 +1,6 @@
 from flask import Flask, render_template
+from flask_socketio import SocketIO, join_room, emit
+socketio = SocketIO(app)
 
 # initialize Flask
 app = Flask(__name__)
@@ -12,4 +14,4 @@ def run_server(q):
 	app.run()
 	while True:
 		movement = q.get()
-		print(movement)
+		emit('move', {'move': movement})
