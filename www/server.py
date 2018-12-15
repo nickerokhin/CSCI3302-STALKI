@@ -7,11 +7,9 @@ from threading import Lock
 
 
 def run_server(q):
-	
+
 	app = Flask(__name__)
 	socketio = SocketIO(app, async_mode='threading')
-	thread = None
-	thread_lock = Lock()
 	@app.route('/')
 	def index():
 		"""Serve the index HTML"""
@@ -26,5 +24,6 @@ def run_server(q):
 			print(movement)
 			
 			emit('move', {'move': movement})
+			
 	socketio.run(app, debug=True)
 	
