@@ -16,9 +16,6 @@ def demo_flight(q):
 		time.sleep(1)
 
 
-
-
-
 if __name__ == '__main__':
 	q = Queue()
 	web = Process(target=run_server, args=(q,))

@@ -61,13 +61,13 @@
 				<p>Drone Interface</p>
 			</div>
 			<div class="centered">
-				<img src="/static/imgs/arrow.png" alt="arrow" style="width:30px;">
+				<img src="/static/imgs/arrow.png" alt="arrow" id='forward' style="width:30px;">
 				<div class="middle">
-					<img class="arrow" src="/static/imgs/arrow_l.png" alt="arrow" style="width:30px;">
+					<img class="arrow" src="/static/imgs/arrow_l.png" alt="arrow" id='left' style="width:30px;">
 					<img src="/static/imgs/drone.jpg" alt="drone image" style="width:300px;">
-					<img class="arrow" src="/static/imgs/arrow_r.png" alt="arrow" style="width:30px;">
+					<img class="arrow" src="/static/imgs/arrow_r.png" alt="arrow" id='right' style="width:30px;">
 				</div>
-				<img src="/static/imgs/arrow_d.png" alt="arrow" style="width:30px;">
+				<img src="/static/imgs/arrow_d.png" alt="arrow" id='back' style="width:30px;">
 			</div>
 		</div>
 		<div class="split right">
@@ -81,11 +81,28 @@
       var socket = io.connect('http://localhost:5000');
       socket.on('connect', function() {
         console.log('Websocket connected!');
-		socket.emit('direction', {data : 'Receiving connections'})
+		    socket.emit('direction', {data : 'Receiving connections'})
       });
+
+      function wipe(){
+        document.getElementById('forward').src='/static/imgs/arrow.png';
+        document.getElementById('left').src='/static/imgs/arrow_l.png';
+        document.getElementById('right').src='/static/imgs/arrow_r.png';
+        document.getElementById('back').src='/static/imgs/arrow_d.png';
+      }
       socket.on('move', function(msg) {
-        console.log(msg);
-        document.getElementById('change').innerHTML = msg.move;
+        wipe()
+        m = msg.move;
+        document.getElementById('change').innerHTML = m;
+        if (m === 'forward') {
+          document.getElementById('forward').src='/static/imgs/arrow_red.png';
+        } else if (m === 'backward'){
+          document.getElementById('back').src='/static/imgs/arrow_d_red.png';
+        } else if (m === 'left'){
+          document.getElementById('left').src='/static/imgs/arrow_l_red.png';
+        } else if (m === 'right'){
+          document.getElementById('right').src='/static/imgs/arrow_r_red.png';
+        }
       });
     </script>
 	</body>
