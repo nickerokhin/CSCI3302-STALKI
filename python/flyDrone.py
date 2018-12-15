@@ -27,7 +27,7 @@ def write_image(que):
         cv2.circle(im, (centerX, centerY),  5, (0, 0,255))
         cv2.circle(im, (centerX, int(lower_bound)), 10, (0, 0, 255))
         cv2.circle(im, (centerX, int(upper_bound)), 10, (0,0,255))
-        print("Image saved")
+        #print("Image saved")
         cv2.imwrite("feed%03d.png" % identifier, im)
 
 
@@ -95,6 +95,7 @@ if (success):
                 im = bebopVision.get_latest_valid_picture()
                 hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
                 dimensions = im.shape
+                #print(dimensions)
                 height = dimensions[0]
                 width = dimensions[1]
                 left_bound = width/3
@@ -107,8 +108,11 @@ if (success):
                 #low = np.array([40, 50, 50])
                 #high = np.array([80, 255, 255])
                 #Pink color in GBR
-                low = np.array([72, 33, 195])
-                high = np.array([203, 192, 255])
+                #low = np.array([72, 33, 195])
+                #high = np.array([203, 192, 255])
+                #Blue color in GBR
+                low = np.array([100, 50, 50])
+                high = np.array([140, 255, 255])
                 image_mask = cv2.inRange(hsv, low, high)
                 kern = np.ones((9,9), np.uint8)
                 mask = cv2.morphologyEx(image_mask, cv2.MORPH_OPEN, kern)
@@ -125,7 +129,7 @@ if (success):
                         biggestRectArea = area
                 if biggestRect is not None:
                     x, y, w, h = biggestRect
-                    print("Rectangle area", biggestRectArea)
+                    #print("Rectangle area", biggestRectArea)
                     #Area range, 9000-13000
                     #Below 9000, move forward
                     #Above 13000, move backward
@@ -137,18 +141,18 @@ if (success):
                     #print("Center Y:", centerY)
                     
                     #if biggestRect is not None:
-
+                    #print("here")
                     
                     if centerY < upper_bound:
-                        #move_down(bebop, 20, 0.5)
-                        print("Moving down")
+                        move_up(bebop, 20, 0.5)
+                        print("Moving up")
                         time.sleep(0.5)
                         inc += 1
 
 
                     elif centerY > lower_bound:
-                        #move_up(bebop, 20, 0.5)
-                        print("Moving up")
+                        move_down(bebop, 20, 0.5)
+                        print("Moving down")
                         time.sleep(0.5)
                         inc += 1
 
@@ -174,7 +178,7 @@ if (success):
                         inc += 1
 
 
-                    elif biggestRectArea > 13000:
+                    elif biggestRectArea > 15000:
                         move_backward(bebop, 20, 1)
                         print("Moving backward")
                         #move_backward(bebop, 20, 2)
