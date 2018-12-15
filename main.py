@@ -1,7 +1,11 @@
-from multiprocessing import Process, Queue
+import sys
+sys.path.append('./flight')
+sys.path.append('./web')
 
-def f(q):
-    q.put([42, None, 'hello'])
+from multiprocessing import Process, Queue
+from flight import start_flight
+
+
 
 if __name__ == '__main__':
     q = Queue()

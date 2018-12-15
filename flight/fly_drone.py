@@ -59,7 +59,7 @@ class UserVision:
             #cv2.imwrite(filename, img)
             self.index +=1
 
-def start_flight():
+def start_flight(q):
     # make my bebop object
     bebop = Bebop()
     queue = Queue()
@@ -226,4 +226,5 @@ def start_flight():
         print("Error connecting to bebop.  Retry")
 
 if __name__ == "__main__":
+	q = None
     start_flight()
