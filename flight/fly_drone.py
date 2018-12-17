@@ -10,7 +10,7 @@ import numpy as np
 import os
 import datetime
 from movements import *
-from multiprocessing import Process, Queue
+#from multiprocessing import Process, Queue
 isAlive = False
 
 
@@ -59,14 +59,21 @@ class UserVision:
             #cv2.imwrite(filename, img)
             self.index +=1
 
-def start_flight():
+def start_flight(q, conn):
     # make my bebop object
     bebop = Bebop()
-    queue = Queue()
+    print("BOOTING")
+    #queue = Queue()
     # connect to the bebop
-    p = Process(target=write_image, args=(queue,))
-    p.start()
+    #p = Process(target=write_image, args=(queue,))
+    #p.start()
     success = bebop.connect(5)
+    UPPER_RECT_SIZE = 13000
+    LOWER_RECT_SIZE = 8000
+    Z_DELAY = 0.5
+    Z_VELOCITY = 20
+    CARDINAL_DELAY = 1
+    CARDINAL_VELOCITY = 40
     clear_images()
     if (success):
         # start up the video
@@ -77,18 +84,19 @@ def start_flight():
         success = bebopVision.open_video()
 
         if (success):
+            conn.put("Connected")
             print("Vision successfully started!")
             #removed the user call to this function (it now happens in open_video())
             #bebopVision.start_video_buffering()
 
             # skipping actually flying for safety purposes indoors - if you want
             # different pictures, move the bebop around by hand
-            print("Fly me around by hand!")
+            #print("Fly me around by hand!")
             #bebop.smart_sleep(5)
 
             then = datetime.datetime.now()
             now = datetime.datetime.now()
-            bebop.safe_takeoff(10)
+            #bebop.safe_takeoff(10)
             inc = 0
             while (now - then).total_seconds() < 45:
                 try:
@@ -136,7 +144,7 @@ def start_flight():
 
                         centerX = int(x + w/2)
                         centerY = int(y + h/2)
-                        queue.put((im, biggestRect, inc, (centerX, centerY), (upper_bound, lower_bound)))
+                        #queue.put((im, biggestRect, inc, (centerX, centerY), (upper_bound, lower_bound)))
                         #print("Center X:", centerX)
                         #print("Center Y:", centerY)
                         
@@ -144,59 +152,67 @@ def start_flight():
                         #print("here")
                         
                         if centerY < upper_bound:
-                            move_up(bebop, 20, 0.5)
+                            move_up(bebop, Z_VELOCITY, Z_DELAY)
                             print("Moving up")
-                            time.sleep(0.5)
+                            q.put("up")
+                            time.sleep(Z_DELAY)
                             inc += 1
 
 
                         elif centerY > lower_bound:
-                            move_down(bebop, 20, 0.5)
+                            move_down(bebop, Z_VELOCITY, Z_DELAY)
                             print("Moving down")
-                            time.sleep(0.5)
+                            q.put("down")
+                            time.sleep(Z_DELAY)
                             inc += 1
 
 
-                        elif biggestRectArea < 8000 and centerX < left_bound:
-                            move_right(bebop, 40, 1)
+                        elif biggestRectArea < LOWER_RECT_SIZE and centerX < left_bound:
+                            move_right(bebop, CARDINAL_VELOCITY, CARDINAL_DELAY)
                             print("Moving right, small rect")
-                            time.sleep(1)
+                            q.put("right")
+                            time.sleep(CARDINAL_DELAY)
                             inc += 1
 
 
-                        elif biggestRectArea < 8000 and centerX > right_bound:
-                            move_left(bebop, 40, 1)
+                        elif biggestRectArea < LOWER_RECT_SIZE and centerX > right_bound:
+                            move_left(bebop, CARDINAL_VELOCITY, CARDINAL_DELAY)
                             print("Moving left, small rect")
-                            time.sleep(1)
+                            q.put("left")
+                            time.sleep(CARDINAL_DELAY)
                             inc += 1
 
 
-                        elif biggestRectArea < 9000:
+                        elif biggestRectArea < LOWER_RECT_SIZE:
                             print("Moving forward")
-                            move_forward(bebop, 40, 1)
-                            time.sleep(1)
+                            move_forward(bebop, CARDINAL_VELOCITY, CARDINAL_DELAY)
+                            q.put("forward")
+                            time.sleep(CARDINAL_DELAY)
                             inc += 1
 
 
-                        elif biggestRectArea > 13000:
-                            move_backward(bebop, 40, 1)
+                        elif biggestRectArea > LOWER_RECT_SIZE:
+                            move_backward(bebop, CARDINAL_VELOCITY, CARDINAL_DELAY)
+                            q.put("backward")
                             print("Moving backward")
                             #move_backward(bebop, 20, 2)
-                            time.sleep(1)
+                            time.sleep(CARDINAL_DELAY)
                             inc += 1
 
 
                         elif centerX < left_bound:
-                            move_right(bebop, 40, 1)
+                            move_right(bebop, CARDINAL_VELOCITY, CARDINAL_DELAY)
+                            q.put("right")
                             print("Moving right")
-                            time.sleep(1)
+                            time.sleep(CARDINAL_DELAY)
                             inc += 1
 
 
                         elif centerX > right_bound:
-                            move_left(bebop, 40, 1)
+                            move_left(bebop, CARDINAL_VELOCITY, CARDINAL_DELAY)
                             print("Moving left")
-                            time.sleep(1)
+                            q.put("left")
+                            time.sleep(CARDINAL_DELAY)
                             inc += 1
 
                     
@@ -220,7 +236,7 @@ def start_flight():
 
         # disconnect nicely so we don't need a reboot
         print("Finishing demo, landing....")
-        bebop.safe_land(20)
+        #bebop.safe_land(20)
         #bebop.disconnect()
     else:
         print("Error connecting to bebop.  Retry")
